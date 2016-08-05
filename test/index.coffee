@@ -58,7 +58,7 @@ describe "samjs", ->
           autoConnect: false
         })()
       client.plugins(samjsAuthClient,samjsFilesClient)
-      client.auth.createUser name:"root",pwd:"rootroot"
+      client.auth.createRoot "rootroot"
       .then -> done()
       .catch done
     it "should startup", (done) ->
