@@ -1,5 +1,6 @@
 chai = require "chai"
 should = chai.should()
+chai.use require "chai-as-promised"
 samjs = require "samjs"
 samjsClient = require "samjs-client"
 samjsFiles = require "samjs-files"
@@ -24,29 +25,23 @@ testModel =
 unlink = (file) ->
   fs.unlinkAsync file
   .catch -> return true
-reset = (done) ->
-  samjs.reset()
-  unlink testConfigFile
-  .finally ->
-    done()
-shutdown = (done) ->
-
-  promises = [unlink(testConfigFile)]
-  promises.push samjs.shutdown() if samjs.shutdown?
-  samjs.Promise.all promises
-  .then -> done()
 
 describe "samjs", ->
   client = null
   clientTest = null
   describe "files-auth", ->
-    before reset
-    after shutdown
+    before ->
+      samjs.reset()
+      unlink testConfigFile
+    after ->
+      promises = [unlink(testConfigFile)]
+      promises.push samjs.shutdown() if samjs.shutdown?
+      samjs.Promise.all promises
     it "should be accessible", ->
       samjs.plugins(samjsAuth,samjsFiles,samjsFilesAuth)
       should.exist samjs.files
       should.exist samjs.auth
-    it "should install", (done) ->
+    it "should install", ->
       samjs.options({config:testConfigFile})
       .configs()
       .models(testModel)
@@ -59,32 +54,21 @@ describe "samjs", ->
         })()
       client.plugins(samjsAuthClient,samjsFilesClient)
       client.auth.createRoot "rootroot"
-      .then -> done()
-      .catch done
-    it "should startup", (done) ->
-      samjs.state.onceStarted.then -> done()
-      .catch done
+    it "should startup", ->
+      samjs.state.onceStarted
     describe "client", ->
       clientTest = null
-      it "should be unaccessible", (done) ->
+      it "should be unaccessible",  ->
         clientTest = new client.Files("test")
         samjs.Promise.any [clientTest.get(),clientTest.set("something")]
-        .then (result) ->
-          console.log result
-        .catch (result) ->
-          result.should.be.an.instanceOf Error
-          done()
-      it "should auth", (done) ->
+        .should.be.rejected
+      it "should auth", ->
         client.auth.login {name:"root",pwd:"rootroot"}
         .then (result) ->
           result.name.should.equal "root"
-          done()
-        .catch done
-      it "should be able to set and get", (done) ->
+      it "should be able to set and get", ->
         clientTest.set("something")
         .then ->
           clientTest.get()
         .then (result) ->
           result.should.equal "something"
-          done()
-        .catch done
