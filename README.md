@@ -30,8 +30,10 @@ samjs
     // to disable auth plugin use this instead:
     noAuth: {}
   },
-  read: true, // allowed for all
-  write: "root", // allowed for root only
+  access:{
+    read: true, // allowed for all
+    write: "root" // allowed for root only
+  }
   // optional, permission checker used for this model
   // can be a name or a custom function
   // see samjs-auth for further information
