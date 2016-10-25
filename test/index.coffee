@@ -18,8 +18,10 @@ testModel =
   name: "test"
   db: "files"
   files: testConfigFile
-  write: "root"
-  read: "root"
+  options: "utf8"
+  access:
+    write: "root"
+    read: "root"
   plugins:
     auth: null
 unlink = (file) ->
@@ -38,7 +40,7 @@ describe "samjs", ->
       promises.push samjs.shutdown() if samjs.shutdown?
       samjs.Promise.all promises
     it "should be accessible", ->
-      samjs.plugins(samjsAuth,samjsFiles,samjsFilesAuth)
+      samjs.plugins(samjsAuth(),samjsFiles,samjsFilesAuth)
       should.exist samjs.files
       should.exist samjs.auth
     it "should install", ->
@@ -59,16 +61,17 @@ describe "samjs", ->
     describe "client", ->
       clientTest = null
       it "should be unaccessible",  ->
-        clientTest = new client.Files("test")
+        clientTest = client.getFilesModel("test")
         samjs.Promise.any [clientTest.get(),clientTest.set("something")]
         .should.be.rejected
       it "should auth", ->
         client.auth.login {name:"root",pwd:"rootroot"}
         .then (result) ->
           result.name.should.equal "root"
-      it "should be able to set and get", ->
+      it "should be able to set", ->
         clientTest.set("something")
-        .then ->
-          clientTest.get()
+
+      it "should be able to get", ->
+        clientTest.get()
         .then (result) ->
           result.should.equal "something"
