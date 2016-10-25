@@ -8,16 +8,16 @@ module.exports = (samjs) ->
   throw new Error "samjs-files not found - must be loaded before samjs-files-auth" unless samjs.files
   throw new Error "samjs-auth not found - must be loaded before samjs-files-auth" unless samjs.auth
   samjs.files.plugins auth: (options) ->
-    @addHook "beforeGet", ({file, client}) ->
-      samjs.auth.isAllowed(client,file.read,@permissionCheckers)
-      return file: file, client:client
-    @addHook "beforeSet", ({data,file, client}) ->
-      if file.isNew
-        permission = file.insert
+    @addHook "beforeGet", (obj) ->
+      samjs.auth.isAllowed(obj.socket,obj.file.read,@permissionCheckers)
+      return obj
+    @addHook "beforeSet", (obj) ->
+      if obj.file.isNew
+        permission = obj.file.insert
       else
-        permission = file.update
-      samjs.auth.isAllowed(client,permission,@permissionCheckers)
-      return data: data, file:file, client:client
-    @addHook "beforeDelete", ({file, client}) ->
-      samjs.auth.isAllowed(client,file.delete,@permissionCheckers)
-      return file: file, client:client
+        permission = obj.file.update
+      samjs.auth.isAllowed(obj.socket,permission,@permissionCheckers)
+      return obj
+    @addHook "beforeDelete", (obj) ->
+      samjs.auth.isAllowed(obj.socket,obj.file.delete,@permissionCheckers)
+      return obj

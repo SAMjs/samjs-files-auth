@@ -32,7 +32,11 @@ samjs
   },
   access:{
     read: true, // allowed for all
-    write: "root" // allowed for root only
+    write: "root", // allowed for root only
+    insert: "root", // defaults to value of write
+    update: "root", // defaults to value of write
+    delete: "root" // defaults to value of write
+
   }
   // optional, permission checker used for this model
   // can be a name or a custom function
