@@ -8,6 +8,9 @@
     "email": "paul.pflugradt@gmail.com"
   },
   "main": "lib/main.js",
+  "files": [
+    "lib/"
+  ],
   "engines": {
     "node": "*"
   },
@@ -19,12 +22,12 @@
     "coffee-script": "^1.11.1",
     "mocha": "^3.1.2",
     "rimraf": "^2.5.4",
-    "samjs": "^0.2.3",
-    "samjs-auth": "^0.2.2",
-    "samjs-auth-client": "^0.2.2",
-    "samjs-client": "^0.2.2",
-    "samjs-files": "^0.2.4",
-    "samjs-files-client": "^0.2.2"
+    "samjs": "^0.3.1",
+    "samjs-auth": "^0.3.0",
+    "samjs-auth-client": "^0.3.0",
+    "samjs-client": "^0.3.0",
+    "samjs-files": "^0.3.0",
+    "samjs-files-client": "^0.3.0"
   },
   "keywords": [],
   "readmeFilename": "README.md",

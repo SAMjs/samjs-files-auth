@@ -51,13 +51,18 @@ describe "samjs", ->
       client = samjsClient({
         url: url
         ioOpts:
-          reconnection: false
           autoConnect: false
         })()
       client.plugins(samjsAuthClient,samjsFilesClient)
-      client.auth.createRoot "rootroot"
-    it "should startup", ->
+      client.install.onceConfigure
+      .then -> client.auth.createRoot "rootroot"
+    it "should be started up", (done) ->
+      @timeout(3000)
       samjs.state.onceStarted
+      .then ->
+        client.io.socket.once "reconnect", -> done()
+      .catch done
+      return null
     describe "client", ->
       clientTest = null
       it "should be unaccessible",  ->
