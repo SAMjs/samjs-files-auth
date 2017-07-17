@@ -1,7 +1,7 @@
 {
   "name": "samjs-files-auth",
   "description": "Adds authorization for samjs-files",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "repository": "https://github.com/SAMjs/samjs-files-auth",
   "author": {
     "name": "Paul Pflugradt",
