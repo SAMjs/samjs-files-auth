@@ -1,15 +1,15 @@
 chai = require "chai"
 should = chai.should()
 chai.use require "chai-as-promised"
-samjs = require "samjs"
-samjsClient = require "samjs-client"
-samjsFiles = require "samjs-files"
-samjsFilesClient = require "samjs-files-client"
-samjsFilesAuth = require "../src/main"
-samjsAuth = require "samjs-auth"
-samjsAuthClient = require "samjs-auth-client"
-fs = samjs.Promise.promisifyAll(require("fs"))
-path = require "path"
+requireAny = require "try-require-multiple"
+Samjs = requireAny "samjs/src", "samjs"
+SamjsClient = requireAny "samjs/client-src", "samjs/client"
+samjsFiles = requireAny "samjs-files/src", "samjs-files"
+samjsFilesClient = requireAny "samjs-files/client-src", "samjs-files/client"
+samjsFilesAuth = require "../src"
+samjsAuth = requireAny "samjs-auth/src", "samjs-auth"
+samjsAuthClient = requireAny "samjs-auth/client-src", "samjs-auth/client"
+
 port = 3060
 url = "http://localhost:"+port+"/"
 testConfigFile = "test/testConfig.json"
@@ -17,66 +17,43 @@ testConfigFile = "test/testConfig.json"
 testModel =
   name: "test"
   db: "files"
-  files: testConfigFile
+  files: "test/testFile"
   options: "utf8"
   access:
-    write: "root"
-    read: "root"
-  plugins:
-    auth: null
-unlink = (file) ->
-  fs.unlinkAsync file
-  .catch -> return true
+    connect: true
+    write: =>
+    read: =>
 
-describe "samjs", ->
-  client = null
-  clientTest = null
-  describe "files-auth", ->
-    before ->
-      samjs.reset()
-      unlink testConfigFile
-    after ->
-      promises = [unlink(testConfigFile)]
-      promises.push samjs.shutdown() if samjs.shutdown?
-      samjs.Promise.all promises
-    it "should be accessible", ->
-      samjs.plugins(samjsAuth(),samjsFiles,samjsFilesAuth)
-      should.exist samjs.files
-      should.exist samjs.auth
-    it "should install", ->
-      samjs.options({config:testConfigFile})
-      .configs()
-      .models(testModel)
-      .startup().io.listen(port)
-      client = samjsClient({
+
+describe "samjs", =>
+  describe "files-auth", =>
+    samjs = samjsClient = null
+    before =>
+      samjs = new Samjs
+        plugins: [samjsAuth, samjsFiles, samjsFilesAuth]
+        options: config: testConfigFile
+        models: testModel
+      await samjs.finished.then (io) => io.listen(port)
+      await samjs.configs.users.set(data:[{name:"root",pwd:"rootroot"}])
+    after => 
+      samjs.shutdown()
+      samjsClient?.close()
+    it "should connect", =>
+      samjsClient = new SamjsClient
+        plugins: [samjsAuthClient, samjsFilesClient]
         url: url
-        ioOpts:
-          autoConnect: false
-        })()
-      client.plugins(samjsAuthClient,samjsFilesClient)
-      client.install.onceConfigure
-      .then -> client.auth.createRoot "rootroot"
-    it "should be started up", (done) ->
-      @timeout(3000)
-      samjs.state.onceStarted
-      .then ->
-        client.io.socket.once "reconnect", -> done()
-      .catch done
-      return null
-    describe "client", ->
-      clientTest = null
-      it "should be unaccessible",  ->
-        clientTest = client.getFilesModel("test")
-        samjs.Promise.any [clientTest.get(),clientTest.set("something")]
-        .should.be.rejected
-      it "should auth", ->
-        client.auth.login {name:"root",pwd:"rootroot"}
-        .then (result) ->
-          result.name.should.equal "root"
-      it "should be able to set", ->
-        clientTest.set("something")
+        io: reconnection:false
+      await samjsClient.finished
+    describe "client", =>
+      model = null
+      it "should be unaccessible",  =>
+        model = await samjsClient.model("test").ready
+        model.read().should.be.rejected
+        model.write(data: "someData").should.be.rejected
+      it "should auth", =>
+        samjsClient.auth.login {name:"root",pwd:"rootroot"}
+      it "should be able to set", =>
+        model.write(data: "something")
 
-      it "should be able to get", ->
-        clientTest.get()
-        .then (result) ->
-          result.should.equal "something"
+      it "should be able to get", =>
+        model.read().should.eventually.equal "something"

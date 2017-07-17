@@ -7,33 +7,34 @@
     "name": "Paul Pflugradt",
     "email": "paul.pflugradt@gmail.com"
   },
-  "main": "lib/main.js",
+  "license": "MIT",
+  "main": "lib/index.js",
   "files": [
     "lib/"
   ],
   "engines": {
     "node": "*"
   },
-  "dependencies": {},
   "devDependencies": {
-    "atom-ui-reporter": "0.0.1",
-    "chai": "^3.5.0",
-    "chai-as-promised": "^6.0.0",
-    "coffee-script": "^1.11.1",
-    "mocha": "^3.1.2",
-    "rimraf": "^2.5.4",
-    "samjs": "^0.3.1",
+    "chai": "^4.1.0",
+    "chai-as-promised": "^7.1.1",
+    "coffeescript": "^2.0.0-beta3",
+    "mocha": "^3.4.2",
+    "rimraf": "^2.6.1",
+    "samjs": "^0.3.2",
     "samjs-auth": "^0.3.0",
-    "samjs-auth-client": "^0.3.0",
-    "samjs-client": "^0.3.0",
     "samjs-files": "^0.3.0",
-    "samjs-files-client": "^0.3.0"
+    "script-runner": "^0.1.7",
+    "try-require-multiple": "^0.1.0"
   },
   "keywords": [],
   "readmeFilename": "README.md",
   "scripts": {
-    "build": "rimraf lib/ && coffee --no-header --compile --output lib/ src/*.coffee",
+    "prebuild": "rimraf lib/",
+    "build": "run-npm -p build:*",
+    "build:coffee": "coffee --bare --no-header --compile --output lib/ src/*.coffee",
     "test": "mocha",
+    "watch": "mocha --watch",
     "preversion": "npm test",
     "version": "npm run build && git add .",
     "postversion": "git push && git push --tags && npm publish"

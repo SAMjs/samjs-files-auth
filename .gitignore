@@ -1,5 +1,7 @@
 node_modules/
 test/testConfig.json
+test/testFile
 config.json
 lib/
 .vscode
+shrinkwrap.yaml
